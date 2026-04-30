@@ -1,1 +1,5 @@
-baseline	logreg	0.6833
+baseline	logreg	0.6833  # old 
+4412bf2	0.791284	baseline	debug run
+4412bf2	0.848813	keep	hist gradient boosting
+4412bf2	0.848813	keep	hgb max_iter 400
+4412bf2	0.849862	keep	hgb max_leaf_nodes 15

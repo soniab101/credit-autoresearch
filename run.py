@@ -1,40 +1,79 @@
-from prepare import load_data
-from model import build_model, train_model
-from sklearn.metrics import roc_auc_score
+"""
+FROZEN -- Do not modify this file.
+Run one experiment: build model, train, evaluate on validation AUC, log result.
+
+Usage:
+    python run.py "description"              # logs as status=keep
+    python run.py "description" --baseline   # logs as status=baseline
+    python run.py "description" --discard    # logs as status=discard
+    python run.py "description" --crash      # logs as status=crash
+"""
+
+import sys
 import time
+import subprocess
+
+from prepare import load_data, evaluate, log_result
 
 
-start = time.time()
+def get_git_hash():
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            stderr=subprocess.DEVNULL,
+        ).decode().strip()
+    except Exception:
+        return "no-git"
 
 
-# load data
-X_train, X_val, X_test, y_train, y_val, y_test = load_data()
+def main():
+    args = sys.argv[1:]
+    status = "keep"
+    description_parts = []
+
+    for a in args:
+        if a == "--baseline":
+            status = "baseline"
+        elif a == "--discard":
+            status = "discard"
+        elif a == "--crash":
+            status = "crash"
+        else:
+            description_parts.append(a)
+
+    description = " ".join(description_parts) if description_parts else "experiment"
+
+    # 1. Load data using frozen split
+    X_train, y_train, X_val, y_val, X_test, y_test, feature_names = load_data()
+
+    print(
+        f"Data: {X_train.shape[0]} train, "
+        f"{X_val.shape[0]} val, "
+        f"{X_test.shape[0]} locked test, "
+        f"{len(feature_names)} features"
+    )
+    print("Note: test set is locked and not evaluated in this experiment.")
+
+    # 2. Build model from editable file
+    from model import build_model
+    model = build_model()
+    print(f"Model: {model}")
+
+    # 3. Train
+    t0 = time.time()
+    model.fit(X_train, y_train)
+    train_time = time.time() - t0
+    print(f"Training time: {train_time:.2f}s")
+
+    # 4. Evaluate on validation only
+    val_auc = evaluate(model, X_val, y_val)
+    print(f"val_auc: {val_auc:.6f}")
+
+    # 5. Log result
+    commit = get_git_hash()
+    log_result(commit, val_auc, status, description)
+    print(f"Result logged to results.tsv (status={status})")
 
 
-# build model
-model = build_model()
-
-
-# train
-model = train_model(model, X_train, y_train)
-
-
-# evaluate
-preds = model.predict_proba(X_val)[:, 1]
-auc = roc_auc_score(y_val, preds)
-
-
-print(f"Validation AUC: {auc:.4f}")
-
-
-# runtime
-end = time.time()
-print(f"Runtime: {end - start:.2f} seconds")
-
-
-# log result
-with open("results.tsv", "a") as f:
-   f.write(f"baseline\tlogreg\t{auc:.4f}\n")
-
-
-
+if __name__ == "__main__":
+    main()
