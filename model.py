@@ -12,7 +12,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 def build_model():
     """Return an sklearn-compatible model."""
     return HistGradientBoostingClassifier(
-        learning_rate=0.05,
+        learning_rate=0.03,
         max_iter=200,
         max_leaf_nodes=15,
         l2_regularization=0.1,
