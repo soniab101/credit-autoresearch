@@ -29,7 +29,8 @@ def load_data():
     print(df.isnull().sum())
     print(df["SeriousDlqin2yrs"].value_counts(normalize=True))
 
-    df = df.dropna()
+    # v2 loop, commented out df.dropna()
+    #df = df.dropna()
 
     X = df.drop("SeriousDlqin2yrs", axis=1)
     y = df["SeriousDlqin2yrs"]

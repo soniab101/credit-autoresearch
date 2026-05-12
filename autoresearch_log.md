@@ -203,3 +203,107 @@ Human-readable journal for credit default validation experiments.
   Reducing tree complexity with `max_leaf_nodes=15` produced a small validation AUC improvement and became the current retained model.
 - Warnings / errors / failure modes:
   Historical runtime was not recorded. No crash or warning was noted.
+
+## Loop v2 Experiment Entries
+
+Loop v2 retains rows with missing values and handles missingness inside `model.py` pipelines. Do not compare Loop v2 results directly to Loop v1 complete-case results as identical evaluation setups.
+
+### 2026-05-07 17:34 - v2 baseline median imputer hgb
+
+- Status: `baseline`
+- Validation AUC: `0.870665`
+- Runtime: `3.92 s training time`
+- Current Loop v2 best before run: `none`
+- Comparison to current Loop v2 best: `established Loop v2 baseline`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.1,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  This establishes the Loop v2 baseline using retained missing-value rows plus median imputation inside the model pipeline. The validation AUC is substantially higher than prior complete-case Loop v1 results, but the setup is different and should be tracked separately.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` also appended this row to `results.tsv`, so the Loop v2 structured row was copied into `results_v2.tsv`.
+
+### 2026-05-07 17:35 - v2 hgb max_leaf_nodes 15
+
+- Status: `discard`
+- Validation AUC: `0.870596`
+- Runtime: `2.97 s training time`
+- Current Loop v2 best before run: `0.870665`
+- Comparison to current Loop v2 best: `-0.000069`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=15,
+          l2_regularization=0.1,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  Reducing tree capacity from `max_leaf_nodes=31` to 15 slightly decreased validation AUC. For Loop v2, the baseline tree capacity remains marginally better.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard` and copied into `results_v2.tsv`.
+
+### 2026-05-07 17:36 - v2 hgb learning_rate 0.05
+
+- Status: `discard`
+- Validation AUC: `0.870643`
+- Runtime: `2.33 s training time`
+- Current Loop v2 best before run: `0.870665`
+- Comparison to current Loop v2 best: `-0.000022`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.05,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.1,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  Increasing `learning_rate` from 0.03 to 0.05 produced nearly the same validation AUC, but it did not beat the Loop v2 baseline. The lower learning rate remains the current Loop v2 best.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard` and copied into `results_v2.tsv`.
+
+### 2026-05-07 18:09 - v2 hgb l2_regularization 0.05
+
+- Status: `keep`
+- Validation AUC: `0.870970`
+- Runtime: `5.33 s training time`
+- Current Loop v2 best before run: `0.870665`
+- Comparison to current Loop v2 best: `+0.000305`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  Reducing `l2_regularization` from 0.1 to 0.05 improved validation AUC under the Loop v2 missingness-retained setup. This is the new Loop v2 best and the model change is retained.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` appended this row to `results.tsv`, and the Loop v2 row was copied into `results_v2.tsv`.

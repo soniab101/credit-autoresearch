@@ -8,3 +8,7 @@ e860e15	0.848987	discard	hgb max_leaf_nodes 20
 e860e15	0.849262	discard	hgb l2_regularization 0.05
 e860e15	0.849466	discard	hgb l2_regularization 0.2
 e860e15	0.849493	keep	hgb learning_rate 0.03
+c1238ae	0.870665	baseline	v2 baseline median imputer hgb
+c1238ae	0.870596	discard	v2 hgb max_leaf_nodes 15
+c1238ae	0.870643	discard	v2 hgb learning_rate 0.05
+c1238ae	0.870970	keep	v2 hgb l2_regularization 0.05

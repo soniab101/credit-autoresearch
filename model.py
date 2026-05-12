@@ -7,14 +7,17 @@ that can be fit on X_train, y_train and evaluated using validation AUC.
 """
 
 from sklearn.ensemble import HistGradientBoostingClassifier
-
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 
 def build_model():
-    """Return an sklearn-compatible model."""
-    return HistGradientBoostingClassifier(
-        learning_rate=0.03,
-        max_iter=200,
-        max_leaf_nodes=15,
-        l2_regularization=0.1,
-        random_state=42
-    )
+    return Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),
+        ("model", HistGradientBoostingClassifier(
+            learning_rate=0.03,
+            max_iter=200,
+            max_leaf_nodes=31,
+            l2_regularization=0.05,
+            random_state=42
+        ))
+    ])
