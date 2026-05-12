@@ -70,30 +70,24 @@ Regenerate the plot with:
 .venv/bin/python plots.py
 ```
 
-### Missingness-Retained Preprocessing Experiments
+### Experiments
 
 | Description | Status | Validation AUC | Notes |
 | --- | --- | ---: | --- |
-| `v2 baseline median imputer hgb` | baseline | 0.870665 | Retains missing-value rows and uses median imputation inside the pipeline. |
-| `v2 hgb max_leaf_nodes 15` | discard | 0.870596 | Reduced tree capacity from 31 to 15; slightly worse than the missingness-retained baseline. |
-| `v2 hgb learning_rate 0.05` | discard | 0.870643 | Increased learning rate from 0.03 to 0.05; nearly tied but did not improve. |
-| `v2 hgb l2_regularization 0.05` | keep | 0.870970 | Reduced L2 regularization from 0.1 to 0.05; current best retained model. |
-
-### Complete-Case Experiments
-
-| Description | Status | Validation AUC | Notes |
-| --- | --- | ---: | --- |
-| `debug run` | baseline | 0.791284 | Established baseline before boosting experiments. |
+| `logreg` | original baseline | 0.6833 | First recorded logistic regression result. Older run with incomplete metadata. |
+| `debug run` | baseline | 0.791284 | Early baseline/debug validation run; exact model parameters are not recorded in the current files. |
 | `hist gradient boosting` | keep | 0.848813 | Large improvement over logistic-regression baseline. |
 | `hgb max_iter 400` | logged keep | 0.848813 | Matched the best at the time but did not improve; change was not retained. |
-| `hgb max_leaf_nodes 15` | keep | 0.849862 | Improved the best result and is the current retained model. |
-| `hgb max_leaf_nodes 10` | discard | 0.849096 | More constrained trees underperformed the Loop v1 best. |
-| `hgb max_leaf_nodes 20` | discard | 0.848987 | Additional leaf capacity underperformed the Loop v1 best. |
-| `hgb l2_regularization 0.05` | discard | 0.849262 | Weaker L2 regularization underperformed the Loop v1 best. |
-| `hgb l2_regularization 0.2` | discard | 0.849466 | Stronger L2 regularization underperformed the Loop v1 best. |
-
-An older pre-baseline result, `logreg` with AUC `0.6833`, is present in
-`results.tsv` but is not used as the established baseline.
+| `hgb max_leaf_nodes 15` | keep | 0.849862 | Improved the complete-case boosting result. |
+| `hgb max_leaf_nodes 10` | discard | 0.849096 | More constrained trees underperformed the complete-case best. |
+| `hgb max_leaf_nodes 20` | discard | 0.848987 | Additional leaf capacity underperformed the complete-case best. |
+| `hgb l2_regularization 0.05` | discard | 0.849262 | Weaker L2 regularization underperformed the complete-case best. |
+| `hgb l2_regularization 0.2` | discard | 0.849466 | Stronger L2 regularization underperformed the complete-case best. |
+| `hgb learning_rate 0.03` | keep | 0.849493 | Lower learning rate experiment from the complete-case stage; did not exceed the complete-case best in the current log. |
+| `v2 baseline median imputer hgb` | baseline | 0.870665 | Preprocessing/feature-engineering experiment retaining missing-value rows with median imputation inside the pipeline. |
+| `v2 hgb max_leaf_nodes 15` | discard | 0.870596 | Reduced tree capacity from 31 to 15 after adding median imputation; slightly worse than the imputed-data baseline. |
+| `v2 hgb learning_rate 0.05` | discard | 0.870643 | Increased learning rate from 0.03 to 0.05 after adding median imputation; nearly tied but did not improve. |
+| `v2 hgb l2_regularization 0.05` | keep | 0.870970 | Reduced L2 regularization from 0.1 to 0.05 after adding median imputation; current best retained model. |
 
 ## Running an Experiment
 
