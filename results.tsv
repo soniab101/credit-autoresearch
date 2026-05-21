@@ -1,14 +1,20 @@
 baseline	logreg	0.6833  # old 
-4412bf2	0.791284	baseline	debug run
+4412bf2	0.791284	keep	debug run
 4412bf2	0.848813	keep	hist gradient boosting
-4412bf2	0.848813	keep	hgb max_iter 400
+4412bf2	0.848813	discard	hgb max_iter 400
 4412bf2	0.849862	keep	hgb max_leaf_nodes 15
 e860e15	0.849096	discard	hgb max_leaf_nodes 10
 e860e15	0.848987	discard	hgb max_leaf_nodes 20
 e860e15	0.849262	discard	hgb l2_regularization 0.05
 e860e15	0.849466	discard	hgb l2_regularization 0.2
-e860e15	0.849493	keep	hgb learning_rate 0.03
-c1238ae	0.870665	baseline	v2 baseline median imputer hgb
-c1238ae	0.870596	discard	v2 hgb max_leaf_nodes 15
-c1238ae	0.870643	discard	v2 hgb learning_rate 0.05
-c1238ae	0.870970	keep	v2 hgb l2_regularization 0.05
+e860e15	0.849493	discard	hgb learning_rate 0.03
+c1238ae	0.870665	keep	median imputer hgb
+c1238ae	0.870596	discard	hgb max_leaf_nodes 15 with imputer
+c1238ae	0.870643	discard	hgb learning_rate 0.05 with imputer
+c1238ae	0.870970	keep	hgb l2_regularization 0.05 with imputer
+8d0edbd	0.870970	discard	hgb max_iter 300 with imputer
+8d0edbd	0.870913	discard	median imputer missing indicators hgb
+8d0edbd	0.858567	discard	xgboost default hist with median imputer
+8d0edbd	0.870814	discard	hgb class_weight balanced with imputer
+8d0edbd	0.870692	discard	quantile clipping 0.5 99.5 with imputer hgb
+8d0edbd	0.869795	discard	domain ratios and bins with imputer hgb

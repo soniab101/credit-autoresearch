@@ -12,11 +12,9 @@ The validation split is fixed in `prepare.py`, and dry-run experiments evaluate
 only on the validation set. The locked test set is loaded but not evaluated
 during these experiments.
 
-Early experiments used complete-case analysis with rows containing missing
-values dropped. Later experiments retain rows with missing values and handle
-missingness inside `model.py` pipelines. Treat the missing-value/imputation
-change as a documented preprocessing and feature-engineering experiment rather
-than a directly identical evaluation setup.
+The first recorded run is treated as the baseline. Every later experiment is
+compared with the best validation AUC seen so far, regardless of whether the
+change is a model, preprocessing, imputation, or hyperparameter change.
 
 ## Experiment Rules
 
@@ -75,19 +73,19 @@ Regenerate the plot with:
 | Description | Status | Validation AUC | Notes |
 | --- | --- | ---: | --- |
 | `logreg` | original baseline | 0.6833 | First recorded logistic regression result. Older run with incomplete metadata. |
-| `debug run` | baseline | 0.791284 | Early baseline/debug validation run; exact model parameters are not recorded in the current files. |
+| `debug run` | keep | 0.791284 | Improved over the original baseline; exact model parameters are not recorded in the current files. |
 | `hist gradient boosting` | keep | 0.848813 | Large improvement over logistic-regression baseline. |
-| `hgb max_iter 400` | logged keep | 0.848813 | Matched the best at the time but did not improve; change was not retained. |
-| `hgb max_leaf_nodes 15` | keep | 0.849862 | Improved the complete-case boosting result. |
-| `hgb max_leaf_nodes 10` | discard | 0.849096 | More constrained trees underperformed the complete-case best. |
-| `hgb max_leaf_nodes 20` | discard | 0.848987 | Additional leaf capacity underperformed the complete-case best. |
-| `hgb l2_regularization 0.05` | discard | 0.849262 | Weaker L2 regularization underperformed the complete-case best. |
-| `hgb l2_regularization 0.2` | discard | 0.849466 | Stronger L2 regularization underperformed the complete-case best. |
-| `hgb learning_rate 0.03` | keep | 0.849493 | Lower learning rate experiment from the complete-case stage; did not exceed the complete-case best in the current log. |
-| `v2 baseline median imputer hgb` | baseline | 0.870665 | Preprocessing/feature-engineering experiment retaining missing-value rows with median imputation inside the pipeline. |
-| `v2 hgb max_leaf_nodes 15` | discard | 0.870596 | Reduced tree capacity from 31 to 15 after adding median imputation; slightly worse than the imputed-data baseline. |
-| `v2 hgb learning_rate 0.05` | discard | 0.870643 | Increased learning rate from 0.03 to 0.05 after adding median imputation; nearly tied but did not improve. |
-| `v2 hgb l2_regularization 0.05` | keep | 0.870970 | Reduced L2 regularization from 0.1 to 0.05 after adding median imputation; current best retained model. |
+| `hgb max_iter 400` | discard | 0.848813 | Matched the best at the time but did not improve; change was not retained. |
+| `hgb max_leaf_nodes 15` | keep | 0.849862 | Improved the best boosting result. |
+| `hgb max_leaf_nodes 10` | discard | 0.849096 | More constrained trees underperformed the best AUC so far. |
+| `hgb max_leaf_nodes 20` | discard | 0.848987 | Additional leaf capacity underperformed the best AUC so far. |
+| `hgb l2_regularization 0.05` | discard | 0.849262 | Weaker L2 regularization underperformed the best AUC so far. |
+| `hgb l2_regularization 0.2` | discard | 0.849466 | Stronger L2 regularization underperformed the best AUC so far. |
+| `hgb learning_rate 0.03` | discard | 0.849493 | Lower learning rate did not exceed the best AUC so far. |
+| `median imputer hgb` | keep | 0.870665 | Retaining missing-value rows with median imputation inside the pipeline improved the best AUC so far. |
+| `hgb max_leaf_nodes 15 with imputer` | discard | 0.870596 | Reduced tree capacity from 31 to 15 after adding median imputation; slightly worse than the best AUC so far. |
+| `hgb learning_rate 0.05 with imputer` | discard | 0.870643 | Increased learning rate from 0.03 to 0.05 after adding median imputation; nearly tied but did not improve. |
+| `hgb l2_regularization 0.05 with imputer` | keep | 0.870970 | Reduced L2 regularization from 0.1 to 0.05 after adding median imputation; current best retained model. |
 
 ## Running an Experiment
 

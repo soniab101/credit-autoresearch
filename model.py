@@ -7,8 +7,8 @@ that can be fit on X_train, y_train and evaluated using validation AUC.
 """
 
 from sklearn.ensemble import HistGradientBoostingClassifier
-from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 
 def build_model():
     return Pipeline([

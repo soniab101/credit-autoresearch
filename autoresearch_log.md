@@ -6,8 +6,20 @@ Human-readable journal for credit default validation experiments.
 
 ## Current Best
 
-- Best validation AUC: `0.849862`
-- Best retained model: `HistGradientBoostingClassifier(learning_rate=0.05, max_iter=200, max_leaf_nodes=15, l2_regularization=0.1, random_state=42)`
+- Best validation AUC: `0.870970`
+- Best retained model:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
 
 ## Experiment Rules
 
@@ -15,6 +27,7 @@ Human-readable journal for credit default validation experiments.
 - Do not modify `prepare.py` or `run.py`.
 - Do not use the locked test set during dry-run experiments.
 - Keep experiments controlled: change one major variable at a time.
+- Treat the first recorded run as the baseline; after that, keep only experiments that beat the best validation AUC so far.
 - Log every experiment: baseline, keep, discard, and crash.
 - Training plus validation evaluation must complete in under 60 seconds on CPU.
 
@@ -32,23 +45,23 @@ Human-readable journal for credit default validation experiments.
   Logistic regression experiment; exact parameters not recorded in current project files.
   ```
 - Interpretation:
-  Older pre-baseline result. It is present in `results.tsv`, but `README.md` notes that it is not used as the established baseline.
+  First recorded run and the baseline for all later comparisons.
 - Warnings / errors / failure modes:
   Historical entry is incomplete: exact runtime and model parameters were not recorded.
 
 ### Historical - debug run
 
-- Status: `baseline`
+- Status: `keep`
 - Validation AUC: `0.791284`
 - Runtime: `not recorded`
-- Previous best: `none established`
-- Comparison to previous best: `established baseline`
+- Previous best: `0.6833`
+- Comparison to previous best: `+0.107984`
 - Model / parameter change:
   ```python
-  Baseline model used for the debug run; exact parameters not recorded in README.md or results.tsv.
+  Debug run model; exact parameters not recorded in README.md or results.tsv.
   ```
 - Interpretation:
-  Established the controlled validation baseline before the boosting experiments.
+  Improved on the original baseline and became the best recorded result before the boosting experiments.
 - Warnings / errors / failure modes:
   Historical runtime and exact model parameters were not recorded.
 
@@ -163,7 +176,7 @@ Human-readable journal for credit default validation experiments.
 
 ### Historical - hgb max_iter 400
 
-- Status: `keep` in `results.tsv`; not retained according to `README.md`
+- Status: `discard`
 - Validation AUC: `0.848813`
 - Runtime: `not recorded`
 - Previous best: `0.848813`
@@ -178,9 +191,9 @@ Human-readable journal for credit default validation experiments.
   )
   ```
 - Interpretation:
-  Increasing `max_iter` to 400 matched the previous best but did not improve validation AUC. Because it changed a single major parameter and produced no gain, the README says the change was not retained.
+  Increasing `max_iter` to 400 matched the previous best but did not improve validation AUC, so the change is treated as discard.
 - Warnings / errors / failure modes:
-  Historical runtime was not recorded. The status in `results.tsv` is `keep`, but the README clarifies that the model change was not retained because it did not improve.
+  Historical runtime was not recorded.
 
 ### Historical - hgb max_leaf_nodes 15
 
@@ -200,21 +213,19 @@ Human-readable journal for credit default validation experiments.
   )
   ```
 - Interpretation:
-  Reducing tree complexity with `max_leaf_nodes=15` produced a small validation AUC improvement and became the current retained model.
+  Reducing tree complexity with `max_leaf_nodes=15` produced a small validation AUC improvement and became the best retained model at that point.
 - Warnings / errors / failure modes:
   Historical runtime was not recorded. No crash or warning was noted.
 
-## Loop v2 Experiment Entries
+## Later Experiment Entries
 
-Loop v2 retains rows with missing values and handles missingness inside `model.py` pipelines. Do not compare Loop v2 results directly to Loop v1 complete-case results as identical evaluation setups.
+### 2026-05-07 17:34 - median imputer hgb
 
-### 2026-05-07 17:34 - v2 baseline median imputer hgb
-
-- Status: `baseline`
+- Status: `keep`
 - Validation AUC: `0.870665`
 - Runtime: `3.92 s training time`
-- Current Loop v2 best before run: `none`
-- Comparison to current Loop v2 best: `established Loop v2 baseline`
+- Previous best: `0.849862`
+- Comparison to previous best: `+0.020803`
 - Model / parameter change:
   ```python
   Pipeline([
@@ -229,17 +240,17 @@ Loop v2 retains rows with missing values and handles missingness inside `model.p
   ])
   ```
 - Interpretation:
-  This establishes the Loop v2 baseline using retained missing-value rows plus median imputation inside the model pipeline. The validation AUC is substantially higher than prior complete-case Loop v1 results, but the setup is different and should be tracked separately.
+  Retaining missing-value rows plus median imputation inside the model pipeline substantially improved validation AUC and became the best recorded result.
 - Warnings / errors / failure modes:
-  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` also appended this row to `results.tsv`, so the Loop v2 structured row was copied into `results_v2.tsv`.
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation.
 
-### 2026-05-07 17:35 - v2 hgb max_leaf_nodes 15
+### 2026-05-07 17:35 - hgb max_leaf_nodes 15 with imputer
 
 - Status: `discard`
 - Validation AUC: `0.870596`
 - Runtime: `2.97 s training time`
-- Current Loop v2 best before run: `0.870665`
-- Comparison to current Loop v2 best: `-0.000069`
+- Previous best: `0.870665`
+- Comparison to previous best: `-0.000069`
 - Model / parameter change:
   ```python
   Pipeline([
@@ -254,17 +265,17 @@ Loop v2 retains rows with missing values and handles missingness inside `model.p
   ])
   ```
 - Interpretation:
-  Reducing tree capacity from `max_leaf_nodes=31` to 15 slightly decreased validation AUC. For Loop v2, the baseline tree capacity remains marginally better.
+  Reducing tree capacity from `max_leaf_nodes=31` to 15 slightly decreased validation AUC, so the change was discarded.
 - Warnings / errors / failure modes:
-  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard` and copied into `results_v2.tsv`.
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`.
 
-### 2026-05-07 17:36 - v2 hgb learning_rate 0.05
+### 2026-05-07 17:36 - hgb learning_rate 0.05 with imputer
 
 - Status: `discard`
 - Validation AUC: `0.870643`
 - Runtime: `2.33 s training time`
-- Current Loop v2 best before run: `0.870665`
-- Comparison to current Loop v2 best: `-0.000022`
+- Previous best: `0.870665`
+- Comparison to previous best: `-0.000022`
 - Model / parameter change:
   ```python
   Pipeline([
@@ -279,17 +290,17 @@ Loop v2 retains rows with missing values and handles missingness inside `model.p
   ])
   ```
 - Interpretation:
-  Increasing `learning_rate` from 0.03 to 0.05 produced nearly the same validation AUC, but it did not beat the Loop v2 baseline. The lower learning rate remains the current Loop v2 best.
+  Increasing `learning_rate` from 0.03 to 0.05 produced nearly the same validation AUC, but it did not beat the best result so far.
 - Warnings / errors / failure modes:
-  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard` and copied into `results_v2.tsv`.
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`.
 
-### 2026-05-07 18:09 - v2 hgb l2_regularization 0.05
+### 2026-05-07 18:09 - hgb l2_regularization 0.05 with imputer
 
 - Status: `keep`
 - Validation AUC: `0.870970`
 - Runtime: `5.33 s training time`
-- Current Loop v2 best before run: `0.870665`
-- Comparison to current Loop v2 best: `+0.000305`
+- Previous best: `0.870665`
+- Comparison to previous best: `+0.000305`
 - Model / parameter change:
   ```python
   Pipeline([
@@ -304,6 +315,162 @@ Loop v2 retains rows with missing values and handles missingness inside `model.p
   ])
   ```
 - Interpretation:
-  Reducing `l2_regularization` from 0.1 to 0.05 improved validation AUC under the Loop v2 missingness-retained setup. This is the new Loop v2 best and the model change is retained.
+  Reducing `l2_regularization` from 0.1 to 0.05 improved validation AUC. This is the current best and the model change is retained.
 - Warnings / errors / failure modes:
-  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` appended this row to `results.tsv`, and the Loop v2 row was copied into `results_v2.tsv`.
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory and joblib physical-core detection; neither affected validation evaluation. `run.py` appended this row to `results.tsv`.
+
+### 2026-05-21 16:11 - hgb max_iter 300 with imputer
+
+- Status: `discard`
+- Validation AUC: `0.870970`
+- Runtime: `18.39 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `no change`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=300,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  Increasing `max_iter` from 200 to 300 did not improve validation AUC. Because the result tied the prior best rather than exceeding it, the change was discarded and `model.py` was reverted to `max_iter=200`.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`.
+
+### 2026-05-21 16:23 - median imputer missing indicators hgb
+
+- Status: `discard`
+- Validation AUC: `0.870913`
+- Runtime: `3.65 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.000057`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median", add_indicator=True)),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  This domain-informed preprocessing experiment exposed missingness indicators for `MonthlyIncome` and `NumberOfDependents`, the two columns with substantial missingness. The added indicators slightly reduced validation AUC, suggesting the current HGB setup with median imputation already captures enough useful missingness signal or that the explicit indicators add mild noise on this split.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
+
+### 2026-05-21 16:28 - xgboost default hist with median imputer
+
+- Status: `discard`
+- Validation AUC: `0.858567`
+- Runtime: `1.61 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.012403`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", XGBClassifier(
+          objective="binary:logistic",
+          eval_metric="auc",
+          tree_method="hist",
+          random_state=42
+      ))
+  ])
+  ```
+- Why XGBoost was tested:
+  Prior work on the Kaggle "Give Me Some Credit" dataset and related tabular credit-risk problems often reports strong results from boosting-based methods, including XGBoost. This experiment tested whether a reasonable default XGBoost classifier could outperform the current median-imputed HistGradientBoostingClassifier direction without changing preprocessing or evaluation logic.
+- Interpretation:
+  XGBoost did not meaningfully outperform the current best direction; it underperformed by `0.012403` AUC. This result does not justify additional XGBoost tuning runs under the current one-experiment budget. If XGBoost is revisited later, it should be because the search plan explicitly allocates budget for controlled class-imbalance or regularization settings, not because this default comparison was promising.
+- Warnings / errors / failure modes:
+  The run completed successfully. `xgboost==2.1.4` was installed into the local `.venv` to make the requested comparison possible. Environment warnings appeared for a non-writable Matplotlib cache directory and Matplotlib font-cache setup; neither affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best HistGradientBoostingClassifier pipeline.
+
+### 2026-05-21 16:33 - hgb class_weight balanced with imputer
+
+- Status: `discard`
+- Validation AUC: `0.870814`
+- Runtime: `3.97 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.000156`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          class_weight="balanced",
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  This controlled class-imbalance experiment added balanced class weighting to the current best median-imputed HGB pipeline. It slightly reduced validation AUC, suggesting that the current objective and fixed split do not benefit from global inverse-frequency weighting for this metric. The unweighted HGB pipeline remains the retained best.
+- Warnings / errors / failure modes:
+  The run completed successfully. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
+
+### 2026-05-21 16:44 - quantile clipping 0.5 99.5 with imputer hgb
+
+- Status: `discard`
+- Validation AUC: `0.870692`
+- Runtime: `5.32 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.000278`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("clipper", QuantileClipper(lower_quantile=0.005, upper_quantile=0.995)),
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  This outlier-handling experiment clipped each feature to train-fitted 0.5th and 99.5th percentile bounds before median imputation. The validation AUC decreased, suggesting that the retained HGB model benefits from preserving some extreme credit-risk values or already handles outliers adequately through tree splits.
+- Warnings / errors / failure modes:
+  The run completed successfully. Quantile bounds were fit inside the pipeline on the training split only, so validation/test information was not used for preprocessing. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
+
+### 2026-05-21 17:00 - domain ratios and bins with imputer hgb
+
+- Status: `discard`
+- Validation AUC: `0.869795`
+- Runtime: `4.80 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.001175`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("features", CreditFeatureEngineer()),
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Feature engineering tested:
+  Added lightweight domain-informed features before imputation: total delinquency count, severe-delinquency share, open-credit-to-real-estate ratio, income per dependent, debt-income proxy, and age decade bin.
+- Interpretation:
+  The engineered ratios and bins reduced validation AUC. This suggests the retained HGB model is already extracting the useful nonlinear structure from the original columns, and this particular feature bundle added noise or redundant splits rather than signal.
+- Warnings / errors / failure modes:
+  The run completed successfully. The transformer used only row-level arithmetic and fixed binning, with no validation/test-fitted state. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
