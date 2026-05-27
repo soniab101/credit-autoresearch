@@ -474,3 +474,83 @@ Human-readable journal for credit default validation experiments.
   The engineered ratios and bins reduced validation AUC. This suggests the retained HGB model is already extracting the useful nonlinear structure from the original columns, and this particular feature bundle added noise or redundant splits rather than signal.
 - Warnings / errors / failure modes:
   The run completed successfully. The transformer used only row-level arithmetic and fixed binning, with no validation/test-fitted state. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
+
+### 2026-05-26 16:34 - past due sentinel flags with median imputer hgb
+
+- Status: `discard`
+- Validation AUC: `0.870831`
+- Runtime: `5.54 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.000139`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("past_due_sentinels", PastDueSentinelHandler()),
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  This EDA-informed preprocessing experiment targeted the repeated `96` and `98` sentinel-like values in the three past-due count columns. It added sentinel indicator columns and set sentinel count values to missing before median imputation. Validation AUC decreased slightly, suggesting the retained HGB model is better served by preserving those extreme values directly on this split.
+- Warnings / errors / failure modes:
+  The run completed successfully and did not evaluate the locked test set. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
+
+### 2026-05-26 17:06 - clip DebtRatio and revolving utilization only with imputer hgb
+
+- Status: `discard`
+- Validation AUC: `0.870739`
+- Runtime: `3.87 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.000231`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("clipper", SelectedQuantileClipper(
+          lower_quantile=0.005,
+          upper_quantile=0.995
+      )),
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", HistGradientBoostingClassifier(
+          learning_rate=0.03,
+          max_iter=200,
+          max_leaf_nodes=31,
+          l2_regularization=0.05,
+          random_state=42
+      ))
+  ])
+  ```
+- Interpretation:
+  This controlled clipping experiment isolated the two requested heavy-tail variables, `DebtRatio` and `RevolvingUtilizationOfUnsecuredLines`, using the same train-fitted 0.5th and 99.5th percentile bounds as the earlier all-feature clipping test. The validation AUC still decreased, though by less than the all-feature clipping run, suggesting that preserving the raw extreme values in these two features remains slightly better for the retained HGB model on the fixed validation split.
+- Warnings / errors / failure modes:
+  The run completed successfully and did not evaluate the locked test set. Quantile bounds were fit inside the pipeline on the training split only. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, and joblib physical-core detection; none affected validation evaluation. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best pipeline.
+
+### 2026-05-26 17:10 - lightgbm default with median imputer
+
+- Status: `discard`
+- Validation AUC: `0.866955`
+- Runtime: `3.38 s training time`
+- Previous best: `0.870970`
+- Comparison to previous best: `-0.004015`
+- Model / parameter change:
+  ```python
+  Pipeline([
+      ("imputer", SimpleImputer(strategy="median")),
+      ("model", LGBMClassifier(
+          objective="binary",
+          n_estimators=200,
+          random_state=42
+      ))
+  ])
+  ```
+- Why LightGBM was tested:
+  Prior literature and Kaggle solutions for the "Give Me Some Credit" dataset frequently report strong performance from boosting-based tabular models, including LightGBM. This was run as a final controlled model-family comparison against the retained median-imputed `HistGradientBoostingClassifier` direction while keeping preprocessing and validation evaluation unchanged.
+- Interpretation:
+  LightGBM underperformed the retained HGB pipeline by `0.004015` validation AUC. Because this reasonable/default LightGBM comparison did not match or improve the retained model, it does not justify additional LightGBM tuning under the locked search priorities. Model-family exploration should stop here unless a future plan explicitly reopens it with new evidence.
+- Warnings / errors / failure modes:
+  The run completed successfully and did not evaluate the locked test set. `lightgbm==4.6.0` was installed into the local `.venv` to make the requested comparison possible. Environment warnings appeared for a non-writable Matplotlib cache directory, Matplotlib font-cache setup, joblib physical-core detection, and a harmless sklearn feature-name warning from the imputed array passed to LightGBM. `run.py` initially appended this row to `results.tsv` as `keep`; it was corrected to `discard`, and `model.py` was reverted to the retained best HGB pipeline.

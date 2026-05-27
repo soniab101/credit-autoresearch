@@ -18,3 +18,6 @@ c1238ae	0.870970	keep	hgb l2_regularization 0.05 with imputer
 8d0edbd	0.870814	discard	hgb class_weight balanced with imputer
 8d0edbd	0.870692	discard	quantile clipping 0.5 99.5 with imputer hgb
 8d0edbd	0.869795	discard	domain ratios and bins with imputer hgb
+604e4c0	0.870831	discard	past due sentinel flags with median imputer hgb
+604e4c0	0.870739	discard	clip DebtRatio and revolving utilization only with imputer hgb
+604e4c0	0.866955	discard	lightgbm default with median imputer
