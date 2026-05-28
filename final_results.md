@@ -17,11 +17,13 @@ Pipeline([
 ])
 ```
 
+## Final Results table
+
 | Model              |              Evaluation |  ROC AUC |
 | ------------------ | ----------------------: | -------: |
 | Logistic baseline  |          5-fold CV mean | 0.790524 |
 | Final HGB pipeline |          5-fold CV mean | 0.865310 |
-| Final HGB pipeline | locked validation split | 0.870970 |
+| Final HGB pipeline |     best validation AUC | 0.870970 |
 | Final HGB pipeline |         locked test set | 0.871004 |
 
 | Model              | Fold AUCs                                        | Mean AUC |  Std AUC |
