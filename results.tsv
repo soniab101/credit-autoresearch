@@ -1,4 +1,4 @@
-baseline	logreg	0.6833  # old 
+baseline 0.683300	baseline	early exploratory logistic baseline
 4412bf2	0.791284	keep	debug run
 4412bf2	0.848813	keep	hist gradient boosting
 4412bf2	0.848813	discard	hgb max_iter 400
